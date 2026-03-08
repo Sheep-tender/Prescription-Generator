@@ -1,1 +1,597 @@
-Hello world
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prescription Generator</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .form-container {
+            padding: 40px;
+        }
+
+        .form-section {
+            margin-bottom: 30px;
+        }
+
+        .form-section h2 {
+            color: #667eea;
+            font-size: 20px;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+            font-size: 14px;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        textarea,
+        select {
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        textarea:focus,
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+            font-family: inherit;
+        }
+
+        .checkbox-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            margin-right: 8px;
+            cursor: pointer;
+        }
+
+        .checkbox-item label {
+            margin: 0;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 40px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .vitals-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📋 Prescription Generator</h1>
+            <p>Dr. Shirshendu Shekhar Tikader</p>
+        </div>
+
+        <div class="form-container">
+            <form id="prescriptionForm">
+                <!-- Patient Details -->
+                <div class="form-section">
+                    <h2>Patient Information</h2>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="patientName">Patient Name *</label>
+                            <input type="text" id="patientName" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="age">Age *</label>
+                            <input type="number" id="age" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="sex">Sex *</label>
+                            <select id="sex" required>
+                                <option value="">Select</option>
+                                <option value="M">Male</option>
+                                <option value="F">Female</option>
+                                <option value="O">Other</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chief Complaints -->
+                <div class="form-section">
+                    <h2>Chief Complaints</h2>
+                    <div class="form-group">
+                        <textarea id="chiefComplaints" placeholder="Enter chief complaints..."></textarea>
+                    </div>
+                </div>
+
+                <!-- Relevant History -->
+                <div class="form-section">
+                    <h2>Relevant History</h2>
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="t2dm">
+                            <label for="t2dm">T2DM</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="htn">
+                            <label for="htn">HTN</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="tb">
+                            <label for="tb">TB</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="cad">
+                            <label for="cad">CAD</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="asthma">
+                            <label for="asthma">Asthma</label>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="drugAllergy">Drug Allergy</label>
+                            <input type="text" id="drugAllergy">
+                        </div>
+                        <div class="form-group">
+                            <label for="pastSurgery">Past Surgery</label>
+                            <input type="text" id="pastSurgery">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Examination Findings -->
+                <div class="form-section">
+                    <h2>Examination Findings</h2>
+                    <div class="vitals-grid">
+                        <div class="form-group">
+                            <label for="bpSystolic">BP (Systolic)</label>
+                            <input type="number" id="bpSystolic" placeholder="120">
+                        </div>
+                        <div class="form-group">
+                            <label for="bpDiastolic">BP (Diastolic)</label>
+                            <input type="number" id="bpDiastolic" placeholder="80">
+                        </div>
+                        <div class="form-group">
+                            <label for="pulse">Pulse (/min)</label>
+                            <input type="number" id="pulse" placeholder="72">
+                        </div>
+                        <div class="form-group">
+                            <label for="spo2">SpO₂ (%)</label>
+                            <input type="number" id="spo2" placeholder="98">
+                        </div>
+                    </div>
+                    <div class="form-group" style="margin-top: 15px;">
+                        <label for="localExam">Local Examination</label>
+                        <textarea id="localExam"></textarea>
+                    </div>
+                </div>
+
+                <!-- Provisional Diagnosis -->
+                <div class="form-section">
+                    <h2>Provisional Diagnosis</h2>
+                    <div class="form-group">
+                        <textarea id="diagnosis"></textarea>
+                    </div>
+                </div>
+
+                <!-- Investigations -->
+                <div class="form-section">
+                    <h2>Investigations Advised</h2>
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="cbc">
+                            <label for="cbc">CBC</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="bloodSugar">
+                            <label for="bloodSugar">RBS/FBS/PPBS</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="lft">
+                            <label for="lft">LFT</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="rft">
+                            <label for="rft">RFT</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="ecg">
+                            <label for="ecg">ECG</label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="imaging">Imaging</label>
+                        <input type="text" id="imaging" placeholder="e.g., X-ray Chest, USG Abdomen">
+                    </div>
+                </div>
+
+                <!-- Prescription (Rx) -->
+                <div class="form-section">
+                    <h2>Prescription (Rx)</h2>
+                    <div class="form-group">
+                        <textarea id="prescription" rows="6" placeholder="Enter medications and instructions..."></textarea>
+                    </div>
+                </div>
+
+                <!-- Local Treatment -->
+                <div class="form-section">
+                    <h2>Local Treatment / Wound Care</h2>
+                    <div class="form-group">
+                        <textarea id="localTreatment"></textarea>
+                    </div>
+                </div>
+
+                <!-- Advice -->
+                <div class="form-section">
+                    <h2>Advice</h2>
+                    <div class="form-group">
+                        <textarea id="advice"></textarea>
+                    </div>
+                </div>
+
+                <!-- Follow-up -->
+                <div class="form-section">
+                    <h2>Follow-Up</h2>
+                    <div class="form-group">
+                        <textarea id="followUp"></textarea>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn">Generate PDF Prescription</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('prescriptionForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            generatePDF();
+        });
+
+        function generatePDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            // Define column widths
+            const leftColumnWidth = 90;
+            const rightColumnStart = 110;
+            const rightColumnWidth = 85;
+
+            // Get today's date
+            const today = new Date();
+            const dateStr = today.toLocaleDateString('en-GB').replace(/\//g, '/');
+
+            // Header
+            doc.setFontSize(16);
+            doc.setFont(undefined, 'bold');
+            doc.text('Dr. SHIRSHENDU SHEKHAR TIKADER', 105, 15, { align: 'center' });
+            
+            doc.setFontSize(11);
+            doc.setFont(undefined, 'normal');
+            doc.text('MBBS, MS (General Surgery), Reg. No: 87209 (WBMC)', 105, 22, { align: 'center' });
+
+            // Patient Info Line
+            doc.setFontSize(10);
+            const patientName = document.getElementById('patientName').value;
+            const age = document.getElementById('age').value;
+            const sex = document.getElementById('sex').value;
+            
+            doc.text(`Patient Name: ${patientName}`, 15, 35);
+            doc.text(`Age / Sex: ${age} / ${sex}`, 105, 35);
+            doc.text(`Date: ${dateStr}`, 170, 35);
+
+            let yPos = 45;
+
+            // Chief Complaints
+            doc.setFont(undefined, 'bold');
+            doc.text('Chief Complaints', 15, yPos);
+            yPos += 5;
+            doc.setFont(undefined, 'normal');
+            const complaints = document.getElementById('chiefComplaints').value.trim();
+            const complaintsText = complaints || 'NA';
+            const complaintsLines = doc.splitTextToSize(complaintsText, leftColumnWidth);
+            doc.text(complaintsLines, 15, yPos);
+            yPos += complaintsLines.length * 5;
+            yPos += 5;
+
+            // Relevant History
+            doc.setFont(undefined, 'bold');
+            doc.text('Relevant History', 15, yPos);
+            yPos += 5;
+            doc.setFont(undefined, 'normal');
+            
+            // Function to draw checkbox
+            function drawCheckbox(x, y, checked) {
+                const size = 3;
+                // Draw square
+                doc.rect(x, y - size + 0.5, size, size);
+                
+                // Draw checkmark if checked
+                if (checked) {
+                    doc.setLineWidth(0.5);
+                    doc.line(x + 0.5, y - 1, x + 1.2, y - 0.2);
+                    doc.line(x + 1.2, y - 0.2, x + 2.8, y - 2.5);
+                    doc.setLineWidth(0.2);
+                }
+            }
+
+            // Show all options with visual checkboxes
+            const historyOptions = [
+                { id: 't2dm', label: 'T2DM' },
+                { id: 'htn', label: 'HTN' },
+                { id: 'tb', label: 'TB' },
+                { id: 'cad', label: 'CAD' },
+                { id: 'asthma', label: 'Asthma' }
+            ];
+            
+            let xPos = 15;
+            historyOptions.forEach((option, index) => {
+                const isChecked = document.getElementById(option.id).checked;
+                
+                // Draw checkbox
+                drawCheckbox(xPos, yPos, isChecked);
+                
+                // Draw label
+                doc.text(option.label, xPos + 5, yPos);
+                
+                // Calculate next position
+                const labelWidth = doc.getTextWidth(option.label);
+                xPos += labelWidth + 10;
+                
+                // Wrap to next line if needed
+                if (xPos > 90 && index < historyOptions.length - 1) {
+                    xPos = 15;
+                    yPos += 6;
+                }
+            });
+            
+            yPos += 7;
+
+            const drugAllergy = document.getElementById('drugAllergy').value.trim();
+            const drugAllergyText = drugAllergy || 'NA';
+            const drugAllergyLines = doc.splitTextToSize(`Drug allergy: ${drugAllergyText}`, leftColumnWidth);
+            doc.text(drugAllergyLines, 15, yPos);
+            yPos += drugAllergyLines.length * 5;
+
+            const pastSurgery = document.getElementById('pastSurgery').value.trim();
+            const pastSurgeryText = pastSurgery || 'NA';
+            const pastSurgeryLines = doc.splitTextToSize(`Past surgery: ${pastSurgeryText}`, leftColumnWidth);
+            doc.text(pastSurgeryLines, 15, yPos);
+            yPos += pastSurgeryLines.length * 5 + 3;
+
+            // Examination Findings
+            doc.setFont(undefined, 'bold');
+            doc.text('Examination Findings', 15, yPos);
+            yPos += 5;
+            doc.setFont(undefined, 'normal');
+
+            const bpSys = document.getElementById('bpSystolic').value;
+            const bpDia = document.getElementById('bpDiastolic').value;
+            const pulse = document.getElementById('pulse').value;
+            const spo2 = document.getElementById('spo2').value;
+
+            doc.text(`BP: ${bpSys || ''}/${bpDia || ''} mmHg`, 15, yPos);
+            yPos += 5;
+            doc.text(`Pulse: ${pulse || ''}/min`, 15, yPos);
+            yPos += 5;
+            doc.text(`SpO2: ${spo2 || ''}%`, 15, yPos);
+            yPos += 6;
+
+            const localExam = document.getElementById('localExam').value.trim();
+            const localExamText = localExam || 'NA';
+            doc.setFont(undefined, 'bold');
+            doc.text('Local examination', 15, yPos);
+            yPos += 5;
+            doc.setFont(undefined, 'normal');
+            const examLines = doc.splitTextToSize(localExamText, leftColumnWidth);
+            doc.text(examLines, 15, yPos);
+            yPos += examLines.length * 5;
+            yPos += 5;
+
+            // Provisional Diagnosis
+            doc.setFont(undefined, 'bold');
+            doc.text('Provisional Diagnosis', 15, yPos);
+            yPos += 5;
+            doc.setFont(undefined, 'normal');
+            const diagnosis = document.getElementById('diagnosis').value.trim();
+            const diagnosisText = diagnosis || 'NA';
+            const diagLines = doc.splitTextToSize(diagnosisText, leftColumnWidth);
+            doc.text(diagLines, 15, yPos);
+            yPos += diagLines.length * 5;
+            yPos += 5;
+
+            // Investigations
+            doc.setFont(undefined, 'bold');
+            doc.text('Investigations Advised', 15, yPos);
+            yPos += 5;
+            doc.setFont(undefined, 'normal');
+
+            const investigationOptions = [
+                { id: 'cbc', label: 'CBC' },
+                { id: 'bloodSugar', label: 'RBS / FBS / PPBS' },
+                { id: 'lft', label: 'LFT' },
+                { id: 'rft', label: 'RFT' },
+                { id: 'ecg', label: 'ECG' }
+            ];
+
+            investigationOptions.forEach(inv => {
+                const isChecked = document.getElementById(inv.id).checked;
+                drawCheckbox(15, yPos, isChecked);
+                doc.text(inv.label, 20, yPos);
+                yPos += 5;
+            });
+
+            const imaging = document.getElementById('imaging').value.trim();
+            const imagingText = imaging || 'NA';
+            drawCheckbox(15, yPos, false);
+            const imagingLines = doc.splitTextToSize(`Imaging: ${imagingText}`, leftColumnWidth - 5);
+            doc.text(imagingLines, 20, yPos);
+            yPos += imagingLines.length * 5;
+
+            // Right column - Rx
+            let rightYPos = 45;
+            doc.setFontSize(18);
+            doc.setFont(undefined, 'bold');
+            doc.text('Rx', 120, rightYPos);
+            rightYPos += 10;
+
+            doc.setFontSize(10);
+            doc.setFont(undefined, 'normal');
+            const prescription = document.getElementById('prescription').value.trim();
+            const prescriptionText = prescription || 'NA';
+            const rxLines = doc.splitTextToSize(prescriptionText, rightColumnWidth);
+            doc.text(rxLines, rightColumnStart, rightYPos);
+            rightYPos += rxLines.length * 5;
+            rightYPos += 10;
+
+            // Local Treatment
+            doc.setFont(undefined, 'bold');
+            const localTreatmentTitle = doc.splitTextToSize('Local Treatment / Wound Care', rightColumnWidth);
+            doc.text(localTreatmentTitle, rightColumnStart, rightYPos);
+            rightYPos += localTreatmentTitle.length * 5;
+            doc.setFont(undefined, 'normal');
+            const localTreatment = document.getElementById('localTreatment').value.trim();
+            const localTreatmentText = localTreatment || 'NA';
+            const treatLines = doc.splitTextToSize(localTreatmentText, rightColumnWidth);
+            doc.text(treatLines, rightColumnStart, rightYPos);
+            rightYPos += treatLines.length * 5;
+            rightYPos += 10;
+
+            // Advice
+            doc.setFont(undefined, 'bold');
+            doc.text('Advice', rightColumnStart, rightYPos);
+            rightYPos += 5;
+            doc.setFont(undefined, 'normal');
+            const advice = document.getElementById('advice').value.trim();
+            const adviceText = advice || 'NA';
+            const adviceLines = doc.splitTextToSize(adviceText, rightColumnWidth);
+            doc.text(adviceLines, rightColumnStart, rightYPos);
+            rightYPos += adviceLines.length * 5;
+            rightYPos += 10;
+
+            // Follow-up
+            doc.setFont(undefined, 'bold');
+            doc.text('Follow-Up', rightColumnStart, rightYPos);
+            rightYPos += 5;
+            doc.setFont(undefined, 'normal');
+            const followUp = document.getElementById('followUp').value.trim();
+            const followUpText = followUp || 'NA';
+            const followLines = doc.splitTextToSize(followUpText, rightColumnWidth);
+            doc.text(followLines, rightColumnStart, rightYPos);
+            rightYPos += followLines.length * 5;
+
+            // Signature box at bottom
+            doc.rect(120, 260, 75, 25);
+            doc.setFontSize(9);
+            doc.text("Doctor's Signature:", 125, 265);
+            
+            // Signature (handwritten style text)
+            doc.setFontSize(14);
+            doc.setFont('cursive', 'italic');
+            doc.text('Shirshendu', 140, 275);
+            
+            doc.setFontSize(9);
+            doc.setFont(undefined, 'normal');
+            doc.text(`Date & Time: ${dateStr}`, 125, 283);
+
+            // Save PDF
+            doc.save(`Prescription_${patientName.replace(/\s+/g, '_')}_${dateStr.replace(/\//g, '-')}.pdf`);
+        }
+    </script>
+</body>
+</html>
